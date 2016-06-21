@@ -20,6 +20,9 @@
         $('#usersrequest').DataTable( {
             "pagingType": "full_numbers"
         } );
+        $('#userhistorytable').DataTable( {
+            "pagingType": "full_numbers"
+        } );
       } );
 
     </script>
@@ -40,6 +43,13 @@
 <div class="col-xs-10 nopadding">
     <div id="contenttext"> 
       <div style="margin:30px">
+      <ul class="nav nav-tabs">
+              <li class="active"><a data-toggle="tab" href="#user">Users Manage</a></li>
+                <li><a data-toggle="tab" href="#history">Users Access Logs</a></li>
+            </ul>
+      <div class="tab-content">
+              <div id="user" class="tab-pane fade in active">
+                <br>
       <table id="usersrequest" class="table table-striped">
    <thead>
       <tr bgcolor="#1E90FF">
@@ -472,7 +482,34 @@
             
             <% } %>
 <br />
-
+ </div>
+ <div id="history" class="tab-pane fade">
+                <br>
+                <table id="userhistorytable" class="table table-striped">
+                  <thead>
+                    <tr bgcolor="#1E90FF">
+                      <td colspan="8"><center><label><font color="white"><h5>Users Access Logs</h5></font></label></center></td>
+                    </tr>
+                    <tr>
+                      <th>Username</th>
+                      <th>Timestamp</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(userhistory.length){             
+                      for(var i = 0;i < userhistory.length;i++) { %>
+                      <tr>
+                        <td><%=userhistory[i].user%></td>
+                        <td><%=userhistory[i].timestamp%></td>
+                        <td><%=userhistory[i].nameE%></td>
+                      </tr>                   
+                      <%}
+                    }%>
+                  </tbody>
+                </table>
+ </div>
+ </div>
  </div>
 </div>
 </div>

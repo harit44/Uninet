@@ -305,8 +305,8 @@ var statusPost = function(req, res, next) {
 	var year_str = getdate.toString().substring(6,10);
 	var alldate =  year_str+"-"+month_str+"-"+date_str;
 	alldate = new Date(alldate);
+	//////////////////////////////////////// KMUTNB ///////////////////////////////////////
 	var plotly = require('plotly')("expresslane03", "wfdbg1t6ut")
-	var value = 1;
 	var trace1 = {
 		x: [],
 		y: [],
@@ -317,8 +317,8 @@ var statusPost = function(req, res, next) {
 	var post = alldate.toString().indexOf(timestamp.getFullYear());
 	var sub_date = alldate.toString().substring(0,post+4);
 	//console.log(sub_date);
-	//////////////////////////////////////// CU ///////////////////////////////////////
-	connection.query('SELECT * from log_Online_status WHERE host_name = "CU"', function(err, rows, fields) {
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KMUTNB"', function(err, rows, fields) {
+		var value = 1;
 		for (var i=0;i<rows.length;i++){
 			var date_tostr = rows[i].end_time.toString();
 			var index = date_tostr.indexOf(" ");
@@ -343,7 +343,215 @@ var statusPost = function(req, res, next) {
   	plotly.plot(data, graphOptions, function (err, msg) {
   	});
   });
+	setTimeout(function() {
+	//////////////////////////////////////// CU ///////////////////////////////////////
+	var plotly = require('plotly')("expresslane01", "zvcuo12xui")
+
+	var trace2 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
 	
+	connection.query('SELECT * from log_Online_status WHERE host_name = "CU"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace2.x;
+  			var y = trace2.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log(trace2.x);
+  	console.log(trace2.y);
+  	var data = [trace2];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 1000);
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane02", "fcxc4bjob2")
+
+	var trace3 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
+	//////////////////////////////////////// MU ///////////////////////////////////////
+	connection.query('SELECT * from log_Online_status WHERE host_name = "MU"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace3.x;
+  			var y = trace3.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log(trace3.x);
+  	console.log(trace3.y);
+  	var data = [trace3];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 1200);
+	setTimeout(function() {
+	//////////////////////////////////////// CU ///////////////////////////////////////
+	var plotly = require('plotly')("expresslane04", "016hfc74tq")
+
+	var trace4 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
+	
+	connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace4.x;
+  			var y = trace4.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log(trace4.x);
+  	console.log(trace4.y);
+  	var data = [trace4];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 1400);
+	setTimeout(function() {
+	//////////////////////////////////////// KKU ///////////////////////////////////////
+	var plotly = require('plotly')("expresslane05", "f92cfehh0a")
+
+	var trace5 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
+	
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace5.x;
+  			var y = trace5.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log(trace5.x);
+  	console.log(trace5.y);
+  	var data = [trace5];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 1600);
+	setTimeout(function() {
+	//////////////////////////////////////// RMUTSB ///////////////////////////////////////
+	var plotly = require('plotly')("expresslane06", "h2kxqsa2vn")
+
+	var trace5 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
+	
+	connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace5.x;
+  			var y = trace5.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log(trace5.x);
+  	console.log(trace5.y);
+  	var data = [trace5];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 1800);
 	setTimeout(function() {
 		res.redirect('/document');
 	}, 3000);
@@ -544,31 +752,26 @@ var document = function(req, res, next) {
 			autorange: true
 		}
 	};
-	var value = 1;
+	
+	////////////////////////////////////////////// CU ///////////////////////////////////
+	var plotly = require('plotly')("expresslane03", "wfdbg1t6ut")
 	var trace1 = {
 		x: [],
 		y: [],
 		fill: "tozeroy",
 		type: "scatter"
 	};
-	var trace2 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	////////////////////////////////////////////// CU ///////////////////////////////////
-	var plotly = require('plotly')("expresslane03", "wfdbg1t6ut")
 	var timestamp = new Date(); 
 	var post = timestamp.toString().indexOf(timestamp.getFullYear());
 	var sub_date = timestamp.toString().substring(0,post+4);
-	console.log(sub_date);
+	//console.log(sub_date);
 	connection.query('SELECT * from log_Online_status WHERE host_name = "CU" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
 		for (var i=0;i<rows.length;i++){
 			var date_tostr = rows[i].end_time.toString();
 			var index = date_tostr.indexOf(" ");
 			var sub_str = date_tostr.substring(0,index+12);
-			console.log(sub_str);
+			//console.log(sub_str);
 			if(sub_str == sub_date){
 				if(rows[i].statuss == 'Offline'){
 					value = 0;
@@ -589,7 +792,211 @@ var document = function(req, res, next) {
 			console.log(msg)
 		});
 	});
-	
+	////////////////////////////////////////////// KMUTNB ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane01", "zvcuo12xui")
+	var trace2 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "CU" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace2.x;
+				var y = trace2.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log(trace2.x);
+		console.log(trace2.y);
+		var data = [trace2];
+		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 100);
+	////////////////////////////////////////////// MU ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane02", "fcxc4bjob2")
+	var trace3 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "MU" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace3.x;
+				var y = trace3.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log(trace3.x);
+		console.log(trace3.y);
+		var data = [trace3];
+		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 200);
+	////////////////////////////////////////////// UNINET ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane04", "016hfc74tq")
+	var trace4 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace4.x;
+				var y = trace4.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log(trace4.x);
+		console.log(trace4.y);
+		var data = [trace4];
+		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 300);
+	////////////////////////////////////////////// KKU ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane05", "f92cfehh0a")
+	var trace5 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace5.x;
+				var y = trace5.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log(trace5.x);
+		console.log(trace5.y);
+		var data = [trace5];
+		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 400);
+	////////////////////////////////////////////// RMUTSB ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("expresslane06", "h2kxqsa2vn")
+	var trace6 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace6.x;
+				var y = trace6.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log(trace6.x);
+		console.log(trace6.y);
+		var data = [trace6];
+		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 500);
 	}
 
 };
@@ -760,15 +1167,14 @@ var user = function(req, res, next) {
 				
 				var query = connection.query('SELECT * FROM User WHERE role IS NOT NULL',function(err,rows1)
 				{
-					
-					if(err)
-					console.log("Error Selecting : %s ",err );
 					var query = connection.query('SELECT * FROM User WHERE role IS NULL',function(err,rows2)
 					{
-						
-						if(err)
-						console.log("Error Selecting : %s ",err );
-						res.render('user',{page_title:"user",user: user,data:rows1,data1:rows2});
+						var query = connection.query('SELECT * FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action',function(err,userhistory)
+					    {
+							if(err)
+							console.log("Error Selecting : %s ",err );
+							res.render('user',{page_title:"user",user: user,data:rows1,data1:rows2,userhistory:userhistory});
+						});
 					});
 				});
 				//console.log(query.sql);
@@ -1558,12 +1964,22 @@ var signInPost = function(req, res, next) {
 				return res.render('index', {title: 'Sign In',req:req, errorMessage: err.message});
 				} else {
 				user.flag = 1;
+				req.getConnection(function(err,connection){
+				
+				var query = connection.query('INSERT INTO accessLogs(user,action) VALUES(?,1)',[user.username],function(err,rows)
+				{
+					
+					if(err)
+					console.log("Error Selecting : %s ",err );
+				});
+				
+				//console.log(query.sql);
+			    });
 				return res.redirect('/');
 			}
 		});
 	})(req, res, next);
 };
-
 // sign up
 // GET
 
@@ -1647,11 +2063,21 @@ var signOut = function(req, res, next) {
 		res.redirect('/');
 		} else {
 		var user = req.user;
+		var username = req.user.username;
+		console.log(username);
 		req.getConnection(function (err, connection) {
 			var query = connection.query("UPDATE User set flag=0 WHERE id = ? ",[user.id], function(err, rows)
-			{
+			{ 
+				if(err)
+					console.log("Error Selecting : %s ",err );
+				
 			});
-			
+			var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?',[user.id],function(err,rows)
+				{
+					
+					if(err)
+					console.log("Error Selecting : %s ",err );
+				});
 		});
 		req.logout();
 		res.redirect('/');
