@@ -30,10 +30,12 @@ var check = function(req, res) {
 		for(i=0;i<servicetime.length;i++){
 			console.log(servicetime[i].endTime +"//"+ servicetime[i].username +"("+servicetime[i].email+")" );
 
-
 			cron.scheduleJob(servicetime[i].endTime, function(){
-				var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()",function(err)
-				{      
+				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
+				    { 
+				    var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()",function(err)
+				    {      
+					   
 					if (err){
 						console.log("Error Updating : %s ",err );
 					} else {
@@ -73,6 +75,7 @@ var check = function(req, res) {
 							}
 						});
 					}
+					});
 				});
 			});
 
@@ -87,14 +90,18 @@ var check = function(req, res) {
 			cron.scheduleJob(time[i].startTime, function(){
 				var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)",function(err)
 				{
+				  var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
+				    {  
 					var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()",function(err)
 					{
+						  
 
 						if (err)
 							console.log("Error Updating : %s ",err );
 
 
 						console.log(new Date(), "update");
+					});
 					});
 				});
 			});
@@ -108,15 +115,19 @@ var check = function(req, res) {
 
 			cron.scheduleJob(activetime[i].endTime, function(){
 				var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()",function(err)
-				{      
+				{   
+					var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
+				    {     
 					var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()",function(err)
-					{      
+					{   
+					      
 						if (err)
 							console.log("Error Updating : %s ",err );
 
 
 						console.log(new Date(), "update");
 					});
+					});   
 				});
 			});
 
@@ -306,7 +317,7 @@ var statusPost = function(req, res, next) {
 	var alldate =  year_str+"-"+month_str+"-"+date_str;
 	alldate = new Date(alldate);
 	//////////////////////////////////////// KMUTNB ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane03", "wfdbg1t6ut")
+	var plotly = require('plotly')("expresslane10", "vz3zf3o1vp")
 	var trace1 = {
 		x: [],
 		y: [],
@@ -345,7 +356,7 @@ var statusPost = function(req, res, next) {
   });
 	setTimeout(function() {
 	//////////////////////////////////////// CU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane01", "zvcuo12xui")
+	var plotly = require('plotly')("expresslane20", "zvcuo12xui")
 
 	var trace2 = {
 		x: [],
@@ -386,7 +397,7 @@ var statusPost = function(req, res, next) {
   });
 }, 1000);
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane02", "fcxc4bjob2")
+	var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
 
 	var trace3 = {
 		x: [],
@@ -428,7 +439,7 @@ var statusPost = function(req, res, next) {
 }, 1200);
 	setTimeout(function() {
 	//////////////////////////////////////// CU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane04", "016hfc74tq")
+	var plotly = require('plotly')("expresslane40", "016hfc74tq")
 
 	var trace4 = {
 		x: [],
@@ -470,7 +481,7 @@ var statusPost = function(req, res, next) {
 }, 1400);
 	setTimeout(function() {
 	//////////////////////////////////////// KKU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane05", "f92cfehh0a")
+	var plotly = require('plotly')("expresslane50", "f92cfehh0a")
 
 	var trace5 = {
 		x: [],
@@ -512,9 +523,9 @@ var statusPost = function(req, res, next) {
 }, 1600);
 	setTimeout(function() {
 	//////////////////////////////////////// RMUTSB ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane06", "h2kxqsa2vn")
+	var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
 
-	var trace5 = {
+	var trace6 = {
 		x: [],
 		y: [],
 		fill: "tozeroy",
@@ -538,22 +549,65 @@ var statusPost = function(req, res, next) {
   			}else{
   				value = 1;
   			}
-  			var x = trace5.x;
-  			var y = trace5.y;
+  			var x = trace6.x;
+  			var y = trace6.y;
   			x.push(rows[i].end_time);
   			y.push(value);
   		}
   	}
-  	console.log(trace5.x);
-  	console.log(trace5.y);
-  	var data = [trace5];
+  	console.log(trace6.x);
+  	console.log(trace6.y);
+  	var data = [trace6];
   	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
   	plotly.plot(data, graphOptions, function (err, msg) {
   	});
   });
 }, 1800);
 	setTimeout(function() {
-		res.redirect('/document');
+	//////////////////////////////////////// Serviceusage ///////////////////////////////////////
+	var plotly = require('plotly')("uninet", "viv06akyfb")
+
+	var trace7 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = alldate.toString().indexOf(timestamp.getFullYear());
+	var sub_date = alldate.toString().substring(0,post+4);
+	//console.log(sub_date);
+	
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU"', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+  		//console.log(sub_str);
+  		if(sub_str == sub_date){
+  			if(rows[i].statuss == 'Offline'){
+  				value = 0;
+  			}else{
+  				value = 1;
+  			}
+  			var x = trace7.x;
+  			var y = trace7.y;
+  			x.push(rows[i].end_time);
+  			y.push(value);
+  		}
+  	}
+  	console.log("Post");
+  	console.log(trace7.x);
+  	console.log(trace7.y);
+  	var data = [trace7];
+  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  	plotly.plot(data, graphOptions, function (err, msg) {
+  	});
+  });
+}, 2000);
+	setTimeout(function() {
+		res.redirect('/graph');
 	}, 3000);
 	
 };
@@ -663,6 +717,21 @@ var document = function(req, res, next) {
 			user = user.toJSON();
 		}
 		res.render('document', {title: 'document',req:req, user: user});
+	}
+
+};
+var graph = function(req, res, next) {
+	if(!req.isAuthenticated()) {
+		res.redirect('/');
+		}else{
+		var user = req.user;
+		if(user !== undefined) {
+			user = user.toJSON();
+		}
+		if (user.role !== 1) {
+			res.redirect('/');
+			} else {
+		res.render('graph', {title: 'graph',req:req, user: user});
 		
 		var layout_KMUTNB = {
 		showlegend: true,
@@ -753,8 +822,8 @@ var document = function(req, res, next) {
 		}
 	};
 	
-	////////////////////////////////////////////// CU ///////////////////////////////////
-	var plotly = require('plotly')("expresslane03", "wfdbg1t6ut")
+	////////////////////////////////////////////// KMUTNB ///////////////////////////////////
+	var plotly = require('plotly')("expresslane10", "vz3zf3o1vp")
 	var trace1 = {
 		x: [],
 		y: [],
@@ -765,7 +834,7 @@ var document = function(req, res, next) {
 	var post = timestamp.toString().indexOf(timestamp.getFullYear());
 	var sub_date = timestamp.toString().substring(0,post+4);
 	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "CU" Order By id ASC', function(err, rows, fields) {
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KMUTNB" Order By id ASC', function(err, rows, fields) {
 		var value = 1;
 		for (var i=0;i<rows.length;i++){
 			var date_tostr = rows[i].end_time.toString();
@@ -787,14 +856,14 @@ var document = function(req, res, next) {
 		console.log(trace1.x);
 		console.log(trace1.y);
 		var data = [trace1];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_KMUTNB,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
 	});
-	////////////////////////////////////////////// KMUTNB ///////////////////////////////////
+	////////////////////////////////////////////// CU ///////////////////////////////////
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane01", "zvcuo12xui")
+	var plotly = require('plotly')("expresslane20", "zvcuo12xui")
 	var trace2 = {
 		x: [],
 		y: [],
@@ -827,7 +896,7 @@ var document = function(req, res, next) {
 		console.log(trace2.x);
 		console.log(trace2.y);
 		var data = [trace2];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_CU,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
@@ -835,7 +904,7 @@ var document = function(req, res, next) {
 	}, 100);
 	////////////////////////////////////////////// MU ///////////////////////////////////
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane02", "fcxc4bjob2")
+	var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
 	var trace3 = {
 		x: [],
 		y: [],
@@ -868,7 +937,7 @@ var document = function(req, res, next) {
 		console.log(trace3.x);
 		console.log(trace3.y);
 		var data = [trace3];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_MU,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
@@ -876,7 +945,7 @@ var document = function(req, res, next) {
 	}, 200);
 	////////////////////////////////////////////// UNINET ///////////////////////////////////
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane04", "016hfc74tq")
+	var plotly = require('plotly')("expresslane40", "016hfc74tq")
 	var trace4 = {
 		x: [],
 		y: [],
@@ -909,7 +978,7 @@ var document = function(req, res, next) {
 		console.log(trace4.x);
 		console.log(trace4.y);
 		var data = [trace4];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_UNINET,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
@@ -917,7 +986,7 @@ var document = function(req, res, next) {
 	}, 300);
 	////////////////////////////////////////////// KKU ///////////////////////////////////
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane05", "f92cfehh0a")
+	var plotly = require('plotly')("expresslane50", "f92cfehh0a")
 	var trace5 = {
 		x: [],
 		y: [],
@@ -950,7 +1019,7 @@ var document = function(req, res, next) {
 		console.log(trace5.x);
 		console.log(trace5.y);
 		var data = [trace5];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_KKU,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
@@ -958,7 +1027,7 @@ var document = function(req, res, next) {
 	}, 400);
 	////////////////////////////////////////////// RMUTSB ///////////////////////////////////
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane06", "h2kxqsa2vn")
+	var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
 	var trace6 = {
 		x: [],
 		y: [],
@@ -991,16 +1060,58 @@ var document = function(req, res, next) {
 		console.log(trace6.x);
 		console.log(trace6.y);
 		var data = [trace6];
-		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+		var graphOptions = {layout:layout_RMUTSB,filename: "basic-area", fileopt: "overwrite"};
 		plotly.plot(data, graphOptions, function (err, msg) {
 			console.log(msg)
 		});
 	});
 	}, 500);
+	////////////////////////////////////////////// Service Usage ///////////////////////////////////
+	setTimeout(function() {
+	var plotly = require('plotly')("uninet", "viv06akyfb")
+	var trace7 = {
+		x: [],
+		y: [],
+		fill: "tozeroy",
+		type: "scatter"
+	};
+	var timestamp = new Date(); 
+	var post = timestamp.toString().indexOf(timestamp.getFullYear());
+	var sub_date = timestamp.toString().substring(0,post+4);
+	//console.log(sub_date);
+	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU" Order By id ASC', function(err, rows, fields) {
+		var value = 1;
+		for (var i=0;i<rows.length;i++){
+			var date_tostr = rows[i].end_time.toString();
+			var index = date_tostr.indexOf(" ");
+			var sub_str = date_tostr.substring(0,index+12);
+			//console.log(sub_str);
+			if(sub_str == sub_date){
+				if(rows[i].statuss == 'Offline'){
+					value = 0;
+				}else{
+					value = 1;
+				}
+				var x = trace7.x;
+				var y = trace7.y;
+				x.push(rows[i].end_time);
+				y.push(value);
+			}
+		}
+		console.log("KKN");
+		console.log(trace7.x);
+		console.log(trace7.y);
+		var data = [trace7];
+		var graphOptions = {layout:layout_Service,filename: "basic-area", fileopt: "overwrite"};
+		plotly.plot(data, graphOptions, function (err, msg) {
+			console.log(msg)
+		});
+	});
+	}, 600);
+	}
 	}
 
 };
-
 var contact = function(req, res, next) {
 	if(!req.isAuthenticated()) {
         res.render('contact', {title: 'contact',req:req});
@@ -1149,7 +1260,7 @@ var addServiceac = function(req, res, next){
 	});
 };
 
-
+//User Management
 var user = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
@@ -1484,7 +1595,7 @@ var emailmanage = function(req, res, next) {
 				var query = connection.query('SELECT * FROM Emailtext',function(err,rows){
 					if(!err){
 						//console.log("query email text");
-						var query = connection.query('SELECT * FROM EmailLogs ORDER BY logDate DESC',function(err,logs){
+						var query = connection.query('SELECT * FROM EmailLogs ',function(err,logs){ //ORDER BY logDate DESC
 							if(!err){
 								//console.log("query email logs");
 								res.render('emailmanage',{page_title:"Email Management",user: user,data:rows,logs:logs});
@@ -2063,8 +2174,6 @@ var signOut = function(req, res, next) {
 		res.redirect('/');
 		} else {
 		var user = req.user;
-		var username = req.user.username;
-		console.log(username);
 		req.getConnection(function (err, connection) {
 			var query = connection.query("UPDATE User set flag=0 WHERE id = ? ",[user.id], function(err, rows)
 			{ 
@@ -2083,6 +2192,7 @@ var signOut = function(req, res, next) {
 		res.redirect('/');
 	}
 };
+
 
 // 404 not found
 var notFound404 = function(req, res, next) {
@@ -2109,6 +2219,7 @@ module.exports.contact = contact;
 module.exports.status = status;
 module.exports.service = service;
 module.exports.document = document;
+module.exports.graph = graph;
 //memberaction
 module.exports.serviceac = serviceac;
 module.exports.addServiceac = addServiceac;
