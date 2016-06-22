@@ -1,4 +1,5 @@
 // vendor library
+//how to 
 var passport = require('passport');
 var bcrypt = require('bcrypt-nodejs');
 var cron = require('node-schedule');
