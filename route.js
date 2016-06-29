@@ -1,22 +1,27 @@
-// vendor library
-//how to 
+// route.js
+
+
+// Contract UniNet Express Lane Services team
+// Akarasate Waiyaroj(a.waiyaroj@gmail.com)
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// module list
 var passport = require('passport');
 var bcrypt = require('bcrypt-nodejs');
-var cron = require('node-schedule');
-var CronJob = require('cron').CronJob;
-
-//mysql
-var mysql      = require('mysql');
-var connection = mysql.createConnection({//Database setting
+var cron = require('node-schedule');//node-schedule
+var Model = require('./models/model');
+var mysql      = require('mysql');//mysql
+var connection = mysql.createConnection({//database setting
 	host     : 'localhost', //database IP
 	user     : 'root',
 	password : 'root',
 	database : 'UniNetExpressLane' //database name
 });
-
-var queryString = 'SELECT Text FROM Emailtext';
-
-// node mailler
+var queryString = 'SELECT Text FROM Emailtext'; // query template SQL data
 var nodemailer = require('nodemailer'); //nodemailler
 var transporter = nodemailer.createTransport({
 	service: 'gmail',
@@ -25,156 +30,122 @@ var transporter = nodemailer.createTransport({
 		pass: 'vk0kipN;ik'
 	}
 });
+
+//check function to change service state
 var check = function(req, res) {
+	//request timeout
 	var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 0",function(err,servicetime)
 	{
-		for(i=0;i<servicetime.length;i++){
-			console.log(servicetime[i].endTime +"//"+ servicetime[i].username +"("+servicetime[i].email+")" );
+		for(i = 0; i < servicetime.length; i++){
+			console.log(servicetime[i].endTime + "//" + servicetime[i].username + "(" +servicetime[i].email+ ")");
 
 			cron.scheduleJob(servicetime[i].endTime, function(){
-				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
-				    { 
-				    var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()",function(err)
-				    {      
-					   
-					if (err){
-						console.log("Error Updating : %s ",err );
-					} else {
-						console.log(new Date(), "update");
-						//Email section
-						console.log('Send email to '+ servicetime[i].username +"("+servicetime[i].email+")");
-						var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 7', function(err, result){ //Query data from database
-							if(!err) {
-								//connection.release();
-								var temp = result[0].Text;
+				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said, 3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err){ 
+				    var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()",function(err){       
+						if (err){
+							console.log("Error Updating : %s ",err );
+						} else {
+							console.log(new Date(), "update");
+							/*
+							//Email section
+							console.log('Send email to '+ servicetime[i].username +"("+servicetime[i].email+")");
+							var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 7', function(err, result){ //Query data from database
+								if(!err) {
+									//connection.release();
+									var temp = result[0].Text;
 
-								// send email notification
-								transporter.sendMail({
-									form: 'Uninet Express Lane Services Team',
-									to: servicetime[i].email,
-									subject: 'Uninet Express Lane',
-									html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ servicetime[i].NameE+' '+ servicetime[i].LastNameE+', <br><br>'+temp+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-								});
+									// send email notification
+									transporter.sendMail({
+										form: 'Uninet Express Lane Services Team',
+										to: servicetime[i].email,
+										subject: 'Uninet Express Lane',
+										html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ servicetime[i].NameE+' '+ servicetime[i].LastNameE+', <br><br>'+temp+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
+									});
 
-								var logdata = {
-									Sender 		: "Auto Sender",
-									Reciver 	: servicetime[i].username+"("+servicetime[i].email+")",
-									emailData  	: temp
-								};
+									var logdata = {
+										Sender 		: "Auto Sender",
+										Reciver 	: servicetime[i].username +"("+servicetime[i].email+")",
+										emailData  	: temp
+									};
 
-								//save logs to database
-								var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
-									if(err){
-										console.log("Error when query logs : %s",err);
-									} else {
-										console.log("Log saved");
-									}
-								});
-								console.log("Email was send ...");
-							} else {
-								console.log("Error query database ...");
+									//save logs to database
+									var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows){
+										if(err){
+											console.log("Error when query logs : %s", err);
+										} else {
+											console.log("Log saved");
+										}
+									});
+									console.log("Email was send ...");
+								} else {
+									console.log("Error query database ...");
 							}
-						});
-					}
+						});*/
+						}
 					});
 				});
 			});
 
 		}
 	});
-
-	var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4",function(err,time)
-	{
+    //service active by start time
+	var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4", function(err, time){
 		for(i=0;i<time.length;i++){
 			console.log(time[i].startTime);
-
 			cron.scheduleJob(time[i].startTime, function(){
-				var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)",function(err)
-				{
-				  var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
-				    {  
-					var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()",function(err)
-					{
-						  
-
-						if (err)
-							console.log("Error Updating : %s ",err );
-
-
-						console.log(new Date(), "update");
-					});
+				var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)", function(err){
+				  	var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err){  
+						var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()", function(err){
+							if (err)
+								console.log("Error Updating : %s ",err );
+							console.log(new Date(), "update");
+						});
 					});
 				});
 			});
 		}
 	});
-
-	var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7",function(err,activetime)
-	{
+    //service complete by endtime
+	var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7", function(err, activetime){
 		for(i=0;i<activetime.length;i++){
 			console.log(activetime[i].endTime);
-
 			cron.scheduleJob(activetime[i].endTime, function(){
-				var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()",function(err)
-				{   
-					var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)",function(err)
-				    {     
-					var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()",function(err)
-					{   
-					      
-						if (err)
-							console.log("Error Updating : %s ",err );
-
-
-						console.log(new Date(), "update");
-					});
+				var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()",function(err){   
+					var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err){     
+						var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()", function(err){    
+						 	if (err)
+								console.log("Error Updating : %s ",err );
+							console.log(new Date(), "update");
+						});
 					});   
 				});
 			});
-
 		}
 	});
 };
 
-
-// custom library
-// model
-var Model = require('./models/model');
-
-// index
+// home index
 var index = function(req, res, next) {
-	if(!req.isAuthenticated()) {
-                
-                                                         
-		res.render('index', {title: 'Home',req:req});
-                                
-
-		} else {
-		
+	if(!req.isAuthenticated()) {                                                               
+		res.render('index', {title: 'Home', req:req});
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
-
-		req.getConnection(function (err, connection) {
-			
-			var query = connection.query("UPDATE User set flag=1 WHERE id = ? ",[user.id], function(rows)
-			{
-				
-				
-			});
-			
+		req.getConnection(function (err, connection) {	
+			var query = connection.query("UPDATE User set flag=1 WHERE id = ? ", [user.id], function(rows){});			
 		});
-		res.render('index', {title: 'Home',req:req, user: user});
+		res.render('index', {title: 'Home', req:req, user:user});
 	}
     next();
 };
 
+//member signed in
 var member = function(req, res, next) {
 	if(!req.isAuthenticated()) {
-
-		} else {
-		
+		res.redirect('/');
+	} else {		
 		var user = req.user;
 		
 		if(user !== undefined) {
@@ -182,17 +153,17 @@ var member = function(req, res, next) {
 		}
 		if (user.role === 1) {
 			res.render('admin', {title: 'Home', user: user});
-			} else {
+		} else {
 			res.render('member', {title: 'Home', user: user});
 		}
 	}
 };
 
-
+//view profile
 var profile = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		
@@ -201,27 +172,27 @@ var profile = function(req, res, next) {
 		}
 		if (user.role === 1) {
 			res.render('profileadmin', {title: 'profileadmin', user: user});
-			} else {
+		} else {
 			res.render('profile', {title: 'profile', user: user});
 		}
 	}
 };
 
+//reset password render
 var repass = function(req, res, next) {
-   if(!req.isAuthenticated()) {
-      res.render('repass', {title: 'Reset Password',req:req});
-   } else {
-
-      var user = req.user;
-
-      if(user !== undefined) {
-         user = user.toJSON();
+   	if(!req.isAuthenticated()) {
+      	res.render('repass', {title: 'Reset Password', req:req});
+   	} else {
+    	var user = req.user;
+      	if(user !== undefined) {
+         	user = user.toJSON();
       }
 
-          res.render('repass', {title: 'Reset Password', req:req,user: user});
+    res.render('repass', {title: 'Reset Password', req:req, user:user});
    }
 };
 
+//reset password submit
 var repasspost = function(req, res, next) {
 	var input = JSON.parse(JSON.stringify(req.body));
 	var id = req.params.id;
@@ -229,24 +200,18 @@ var repasspost = function(req, res, next) {
 		var username = input.username;
 		var email = input.email;
 		var hash = bcrypt.hashSync(input.password);
-		var query = connection.query("SELECT * FROM User WHERE username = ? and email = ? ",[username,email], function(err, check)
-		{
-
+		var query = connection.query("SELECT * FROM User WHERE username = ? and email = ? ",[username,email], function(err, check){
 			if (JSON.stringify(check) === '[]'){
 				var error = "Invalid username or email"
 				if(!req.isAuthenticated()) {
 					res.render('repass', {title: 'Reset Password',req:req,error:error});
 				} else {
-
 					var user = req.user;
-
 					if(user !== undefined) {
 						user = user.toJSON();
 					}
-
 					res.render('repass', {title: 'Reset Password', req:req,user: user,error:error});
 				}
-
 			}else{
 				var query = connection.query("UPDATE User set password = ? WHERE username = ? and email = ? ",[hash,username,email], function(err, rows){
 					var user = req.user;
@@ -256,10 +221,9 @@ var repasspost = function(req, res, next) {
 					if (err){
 						console.log("Error Updating : %s ",err );
 					} else {
-						res.render('repassed', {title: 'repassed',req:req,user : user});
+						res.render('repassed', {title: 'repassed',req:req, user:user});
 						var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 8', function(err, result){ //Query data from database
 							if(!err) {
-								//connection.release();
 								var temp = result[0].Text;
 
 								// send email notification
@@ -277,9 +241,9 @@ var repasspost = function(req, res, next) {
 								};
 
 								//save logs to database
-								var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
+								var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err, rows){
 									if(err){
-										console.log("Error when query logs : %s",err);
+										console.log("Error when query logs : %s", err);
 									} else {
 										console.log("Log saved");
 									}
@@ -296,20 +260,21 @@ var repasspost = function(req, res, next) {
 	});
 };
 
-
+//about page render
 var about = function(req, res, next) {
 	if(!req.isAuthenticated()) {
-        res.render('about', {title: 'about',req:req});
+        res.render('about', {title: 'about', req:req});
 		}else{
 		var user = req.user;
 		
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
-		res.render('about', {title: 'about',req:req, user: user});
-		
+		res.render('about', {title: 'about', req:req, user:user});
 	}
 };
+
+//status node admin
 var statusPost = function(req, res, next) {
 	var getdate = req.body.date_selection;
 	var month_str = getdate.toString().substring(0,2);
@@ -335,289 +300,277 @@ var statusPost = function(req, res, next) {
 			var date_tostr = rows[i].end_time.toString();
 			var index = date_tostr.indexOf(" ");
 			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
+  			//console.log(sub_str);
+  			if(sub_str == sub_date){
+  				if(rows[i].statuss == 'Offline'){
+  					value = 0;
+  				}else{
+  					value = 1;
+  				}
+  				var x = trace1.x;
+  				var y = trace1.y;
+  				x.push(rows[i].end_time);
+  				y.push(value);
   			}
-  			var x = trace1.x;
-  			var y = trace1.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
   		}
-  	}
-  	console.log(trace1.x);
-  	console.log(trace1.y);
-  	var data = [trace1];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
+  		console.log(trace1.x);
+  		console.log(trace1.y);
+  		var data = [trace1];
+  		var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  		plotly.plot(data, graphOptions, function (err, msg) {});
   	});
-  });
 	setTimeout(function() {
 	//////////////////////////////////////// CU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane20", "zvcuo12xui")
+		var plotly = require('plotly')("expresslane20", "zvcuo12xui")
 
-	var trace2 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
+		var trace2 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+		//console.log(sub_date);
 	
-	connection.query('SELECT * from log_Online_status WHERE host_name = "CU"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
+		connection.query('SELECT * from log_Online_status WHERE host_name = "CU"', function(err, rows, fields) {
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].end_time.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+	  			//console.log(sub_str);
+  				if(sub_str == sub_date){
+  					if(rows[i].statuss == 'Offline'){
+  						value = 0;
+  					}else{
+  						value = 1;
+  					}
+  					var x = trace2.x;
+  					var y = trace2.y;
+  					x.push(rows[i].end_time);
+  					y.push(value);
+  				}
   			}
-  			var x = trace2.x;
-  			var y = trace2.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log(trace2.x);
-  	console.log(trace2.y);
-  	var data = [trace2];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 1000);
+ 	 		console.log(trace2.x);
+  			console.log(trace2.y);
+  			var data = [trace2];
+  			var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  			plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 1000);
 	setTimeout(function() {
-	var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
-
-	var trace3 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
-	//////////////////////////////////////// MU ///////////////////////////////////////
-	connection.query('SELECT * from log_Online_status WHERE host_name = "MU"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
-  			}
-  			var x = trace3.x;
-  			var y = trace3.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log(trace3.x);
-  	console.log(trace3.y);
-  	var data = [trace3];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 1200);
+		var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
+		var trace3 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+				//console.log(sub_date);
+		//////////////////////////////////////// MU ///////////////////////////////////////
+		connection.query('SELECT * from log_Online_status WHERE host_name = "MU"', function(err, rows, fields) {
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].end_time.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+ 	 			//console.log(sub_str);
+  				if(sub_str == sub_date){
+  					if(rows[i].statuss == 'Offline'){
+  						value = 0;
+  					}else{
+  						value = 1;
+  					}
+  					var x = trace3.x;
+  					var y = trace3.y;
+ 	 				x.push(rows[i].end_time);
+ 	 				y.push(value);
+ 	 			}
+	  		}	
+  			console.log(trace3.x);
+  			console.log(trace3.y);
+  			var data = [trace3];
+  			var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  			plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 1200);
 	setTimeout(function() {
 	//////////////////////////////////////// CU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane40", "016hfc74tq")
-
-	var trace4 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
+		var plotly = require('plotly')("expresslane40", "016hfc74tq")
+		var trace4 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+		//console.log(sub_date);
 	
-	connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
+		connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET"', function(err, rows, fields) {
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].end_time.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+  			//console.log(sub_str);
+  				if(sub_str == sub_date){
+  					if(rows[i].statuss == 'Offline'){
+  						value = 0;
+  					}else{
+  						value = 1;
+  					}
+  					var x = trace4.x;
+  					var y = trace4.y;
+  					x.push(rows[i].end_time);
+  					y.push(value);
+  				}
   			}
-  			var x = trace4.x;
-  			var y = trace4.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log(trace4.x);
-  	console.log(trace4.y);
-  	var data = [trace4];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 1400);
+  			console.log(trace4.x);
+  			console.log(trace4.y);
+  			var data = [trace4];
+  			var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  			plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 1400);
+
 	setTimeout(function() {
 	//////////////////////////////////////// KKU ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane50", "f92cfehh0a")
-
-	var trace5 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
+		var plotly = require('plotly')("expresslane50", "f92cfehh0a")
+		var trace5 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+		//console.log(sub_date);
 	
-	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
+		connection.query('SELECT * from log_Online_status WHERE host_name = "KKU"', function(err, rows, fields) {
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].end_time.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+  			//console.log(sub_str);
+  				if(sub_str == sub_date){
+  					if(rows[i].statuss == 'Offline'){
+  						value = 0;
+  					}else{
+  						value = 1;
+  					}
+  					var x = trace5.x;
+  					var y = trace5.y;
+  					x.push(rows[i].end_time);
+  					y.push(value);
+  				}
   			}
-  			var x = trace5.x;
-  			var y = trace5.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log(trace5.x);
-  	console.log(trace5.y);
-  	var data = [trace5];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 1600);
+  			console.log(trace5.x);
+  			console.log(trace5.y);
+	  		var data = [trace5];
+	 	 	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+ 	 		plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 1600);
 	setTimeout(function() {
 	//////////////////////////////////////// RMUTSB ///////////////////////////////////////
-	var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
+		var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
 
-	var trace6 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
-	
-	connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
+		var trace6 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+		//console.log(sub_date);
+		
+		connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB"', function(err, rows, fields) {
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].end_time.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+	  		//console.log(sub_str);
+		  		if(sub_str == sub_date){
+  					if(rows[i].statuss == 'Offline'){
+  						value = 0;
+  					}else{
+  						value = 1;
+  					}	
+  					var x = trace6.x;
+  					var y = trace6.y;
+  					x.push(rows[i].end_time);
+  					y.push(value);
+  				}
   			}
-  			var x = trace6.x;
-  			var y = trace6.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log(trace6.x);
-  	console.log(trace6.y);
-  	var data = [trace6];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 1800);
+  			console.log(trace6.x);
+  			console.log(trace6.y);
+  			var data = [trace6];
+  			var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  			plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 1800);
+
 	setTimeout(function() {
 	//////////////////////////////////////// Serviceusage ///////////////////////////////////////
-	var plotly = require('plotly')("uninet", "viv06akyfb")
+		var plotly = require('plotly')("choocku", "7sz7hclk2g")
 
-	var trace7 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = alldate.toString().indexOf(timestamp.getFullYear());
-	var sub_date = alldate.toString().substring(0,post+4);
-	//console.log(sub_date);
-	
-	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU"', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-  		//console.log(sub_str);
-  		if(sub_str == sub_date){
-  			if(rows[i].statuss == 'Offline'){
-  				value = 0;
-  			}else{
-  				value = 1;
-  			}
-  			var x = trace7.x;
-  			var y = trace7.y;
-  			x.push(rows[i].end_time);
-  			y.push(value);
-  		}
-  	}
-  	console.log("Post");
-  	console.log(trace7.x);
-  	console.log(trace7.y);
-  	var data = [trace7];
-  	var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
-  	plotly.plot(data, graphOptions, function (err, msg) {
-  	});
-  });
-}, 2000);
+		var trace7 = {
+			x: [],
+			y: [],
+			fill: "tozeroy",
+			type: "scatter"
+		};
+		var timestamp = new Date(); 
+		var post = alldate.toString().indexOf(timestamp.getFullYear());
+		var sub_date = alldate.toString().substring(0,post+4);
+		//console.log(sub_date);
+		
+		connection.query('SELECT * from ServiceLogs WHERE actType = 7', function(err, rows, fields) {
+			console.log(rows);
+			var value = 1;
+			for (var i=0;i<rows.length;i++){
+				var date_tostr = rows[i].timestamp.toString();
+				var index = date_tostr.indexOf(" ");
+				var sub_str = date_tostr.substring(0,index+12);
+		  		//console.log(sub_str);
+		  		if(sub_str == sub_date){
+  					var x = trace7.x;
+  					var y = trace7.y;
+  					x.push(rows[i].timestamp);
+  					y.push(value);
+  				}
+ 		 	}
+		  	console.log(trace7.x);
+  			console.log(trace7.y);
+  			var data = [trace7];
+  			var graphOptions = {filename: "basic-area", fileopt: "overwrite"};
+  			plotly.plot(data, graphOptions, function (err, msg) {});
+  		});
+	}, 2000);
 	setTimeout(function() {
 		res.redirect('/graph');
 	}, 3000);
 	
 };
+
+//status node member
 var status = function(req, res, next) {
 	
 	if(!req.isAuthenticated()) {
 		req.getConnection(function(err,connection){	
-			var query = connection.query('SELECT * FROM Online_Status Order By id ',function(err,rows)
-			{
+			var query = connection.query('SELECT * FROM Online_Status Order By id ', function(err, rows){
 				if(err)
 					console.log("Error Selecting : %s ",err );
 				res.render('status',{page_title:"status",req:req,status_user:rows});
@@ -634,36 +587,29 @@ var status = function(req, res, next) {
 
 			req.getConnection(function(err,connection){
 
-				var query = connection.query('SELECT * FROM Online_Status',function(err,status)
-				{
+				var query = connection.query('SELECT * FROM Online_Status',function(err,status){
 					if(err)
 						console.log("Error Selecting : %s ",err );
-					var query = connection.query('SELECT * FROM Netfpga_Status',function(err,rows)
-					{
-
+					var query = connection.query('SELECT * FROM Netfpga_Status',function(err,rows){
 						if(err)
 							console.log("Error Selecting : %s ",err );
 						var query = connection.query('SELECT *  FROM Nagios_Status',function(err,nagios){
-
 							if(err){
 								console.log("Error Selecting : %s ",err );
 							}
-							var query = connection.query('SELECT *  FROM log_netfpga',function(err,logs_netfpga){
-								
+							var query = connection.query('SELECT *  FROM log_netfpga',function(err,logs_netfpga){	
 								if(err){
 									console.log("Error Selecting : %s ",err );
 								}
 								var query = connection.query('SELECT *  FROM log_Online_status',function(err,logs_node){
-
 									if(err){
 										console.log("Error Selecting : %s ",err );
 									}
 									var query = connection.query('SELECT *  FROM log_nagios',function(err,logs_nagios){
-
 										if(err){
 											console.log("Error Selecting : %s ",err );
 										}
-										res.render('status',{page_title:"status",req:req,user:user,status:status,logs_nagios:logs_nagios,data:rows,nagios:nagios,logs_netfpga:logs_netfpga,logs_node:logs_node});
+										res.render('status',{page_title:"status", req:req, user:user, status:status, logs_nagios:logs_nagios, data:rows, nagios:nagios, logs_netfpga:logs_netfpga, logs_node:logs_node});
 									});
 								});
 								
@@ -682,8 +628,7 @@ var status = function(req, res, next) {
 				user = user.toJSON();
 			}
 			req.getConnection(function(err,connection){	
-				var query = connection.query('SELECT * FROM Online_Status',function(err,rows)
-				{
+				var query = connection.query('SELECT * FROM Online_Status',function(err, rows){
 					if(err)
 						console.log("Error Selecting : %s ",err );
 					res.render('status',{page_title:"status",user:user,req:req,status_user:rows});
@@ -695,25 +640,25 @@ var status = function(req, res, next) {
 
 };
 
-
+//service page render
 var service = function(req, res, next) {
 	if(!req.isAuthenticated()) {
         res.render('service', {title: 'service',req:req});
-		}else{
+	}else{
 		var user = req.user;
-		
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
 		res.render('service', {title: 'service',req:req, user: user});
 	}
 };
+
+//document page render
 var document = function(req, res, next) {
 	if(!req.isAuthenticated()) {
         res.render('document', {title: 'document',req:req});
-		}else{
-		var user = req.user;
-		
+	}else{
+		var user = req.user;	
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
@@ -721,417 +666,415 @@ var document = function(req, res, next) {
 	}
 
 };
+
+//graph page render
 var graph = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		}else{
+}else{
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
-		res.render('graph', {title: 'graph',req:req, user: user});
+		} else {
+			res.render('graph', {title: 'graph',req:req, user: user});
 		
-		var layout_KMUTNB = {
-		showlegend: true,
-		title: 'Node Connected : BSU',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};
-	var layout_UNINET = {
-		showlegend: true,
-		title: 'Node Connected : PYT1',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};
-	var layout_MU = {
-		showlegend: true,
-		title: 'Node Connected : SLY',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};var layout_KKU = {
-		showlegend: true,
-		title: 'Node Connected : KKN',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};var layout_CU = {
-		showlegend: true,
-		title: 'Node Connected : PYT2',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};var layout_RMUTSB = {
-		showlegend: true,
-		title: 'Node Connected : RMUTSB',
-		yaxis: {
-			title: 'Connected',
-			autorange: true,
-			range: [0,1]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};
-	var layout_Service = {
-		showlegend: true,
-		title: 'Service Usage',
-		yaxis: {
-			title: 'Count of service',
-			autorange: true,
-			range: [0,100]
-		},
-		xaxis: {
-			title: 'Time',
-			autorange: true
-		}
-	};
+			var layout_KMUTNB = {
+				showlegend: true,
+				title: 'Node Connected : BSU',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};
+
+			var layout_UNINET = {
+				showlegend: true,
+				title: 'Node Connected : PYT1',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};
+			var layout_MU = {
+				showlegend: true,
+				title: 'Node Connected : SLY',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};
+			var layout_KKU = {
+				showlegend: true,
+				title: 'Node Connected : KKN',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};var layout_CU = {
+				showlegend: true,
+				title: 'Node Connected : PYT2',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};var layout_RMUTSB = {
+				showlegend: true,
+				title: 'Node Connected : RMUTSB',
+				yaxis: {
+					title: 'Connected',
+					autorange: true,
+					range: [0,1]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};
+			var layout_Service = {
+				showlegend: true,
+				title: 'Service Usage',
+				yaxis: {
+					title: 'Count of service',
+					autorange: true,
+					range: [0,100]
+				},
+				xaxis: {
+					title: 'Time',
+					autorange: true
+				}
+			};
 	
 	////////////////////////////////////////////// KMUTNB ///////////////////////////////////
-	var plotly = require('plotly')("expresslane10", "vz3zf3o1vp")
-	var trace1 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "KMUTNB" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
+			var plotly = require('plotly')("expresslane10", "vz3zf3o1vp")
+			var trace1 = {
+				x: [],
+				y: [],
+				fill: "tozeroy",
+				type: "scatter"
+			};
+			var timestamp = new Date(); 
+			var post = timestamp.toString().indexOf(timestamp.getFullYear());
+			var sub_date = timestamp.toString().substring(0,post+4);
+			//console.log(sub_date);
+			connection.query('SELECT * from log_Online_status WHERE host_name = "KMUTNB" Order By id ASC', function(err, rows, fields) {
+				var value = 1;
+				for (var i=0;i<rows.length;i++){
+					var date_tostr = rows[i].end_time.toString();
+					var index = date_tostr.indexOf(" ");
+					var sub_str = date_tostr.substring(0,index+12);
+					//console.log(sub_str);
+					if(sub_str == sub_date){
+						if(rows[i].statuss == 'Offline'){
+							value = 0;
+						}else{
+							value = 1;
+						}
+						var x = trace1.x;
+						var y = trace1.y;
+						x.push(rows[i].end_time);
+						y.push(value);
+					}
 				}
-				var x = trace1.x;
-				var y = trace1.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
+				console.log(trace1.x);
+				console.log(trace1.y);
+				var data = [trace1];
+				var graphOptions = {layout:layout_KMUTNB,filename: "basic-area", fileopt: "overwrite"};
+				plotly.plot(data, graphOptions, function (err, msg) {
+					console.log(msg)
+				});
+			});
+			////////////////////////////////////////////// CU ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("expresslane20", "zvcuo12xui")
+				var trace2 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from log_Online_status WHERE host_name = "CU" Order By id ASC', function(err, rows, fields) {
+					var value = 1;
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].end_time.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						//console.log(sub_str);
+						if(sub_str == sub_date){
+							if(rows[i].statuss == 'Offline'){
+								value = 0;
+							}else{
+								value = 1;
+							}
+							var x = trace2.x;
+							var y = trace2.y;
+							x.push(rows[i].end_time);
+							y.push(value);
+						}
+					}
+					console.log(trace2.x);
+					console.log(trace2.y);
+					var data = [trace2];
+					var graphOptions = {layout:layout_CU,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 100);
+			////////////////////////////////////////////// MU ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
+				var trace3 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from log_Online_status WHERE host_name = "MU" Order By id ASC', function(err, rows, fields) {
+					var value = 1;
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].end_time.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						//console.log(sub_str);
+						if(sub_str == sub_date){
+							if(rows[i].statuss == 'Offline'){
+								value = 0;
+							}else{
+								value = 1;
+							}
+							var x = trace3.x;
+							var y = trace3.y;
+							x.push(rows[i].end_time);
+							y.push(value);
+						}
+					}
+					console.log(trace3.x);
+					console.log(trace3.y);
+					var data = [trace3];
+					var graphOptions = {layout:layout_MU,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 200);
+			////////////////////////////////////////////// UNINET ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("expresslane40", "016hfc74tq")
+				var trace4 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET" Order By id ASC', function(err, rows, fields) {
+					var value = 1;
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].end_time.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						//console.log(sub_str);
+						if(sub_str == sub_date){
+							if(rows[i].statuss == 'Offline'){
+								value = 0;
+							}else{
+								value = 1;
+							}
+							var x = trace4.x;
+							var y = trace4.y;
+							x.push(rows[i].end_time);
+							y.push(value);
+						}
+					}
+					console.log(trace4.x);
+					console.log(trace4.y);
+					var data = [trace4];
+					var graphOptions = {layout:layout_UNINET,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 300);
+			////////////////////////////////////////////// KKU ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("expresslane50", "f92cfehh0a")
+				var trace5 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from log_Online_status WHERE host_name = "KKU" Order By id ASC', function(err, rows, fields) {
+					var value = 1;
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].end_time.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						//console.log(sub_str);
+						if(sub_str == sub_date){
+							if(rows[i].statuss == 'Offline'){
+								value = 0;
+							}else{
+								value = 1;
+							}
+							var x = trace5.x;
+							var y = trace5.y;
+							x.push(rows[i].end_time);
+							y.push(value);
+						}
+					}
+					console.log(trace5.x);
+					console.log(trace5.y);
+					var data = [trace5];
+					var graphOptions = {layout:layout_KKU,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 400);
+			////////////////////////////////////////////// RMUTSB ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
+				var trace6 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB" Order By id ASC', function(err, rows, fields) {
+					var value = 1;
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].end_time.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						//console.log(sub_str);
+						if(sub_str == sub_date){
+							if(rows[i].statuss == 'Offline'){
+								value = 0;
+							}else{
+								value = 1;
+							}
+							var x = trace6.x;
+							var y = trace6.y;
+							x.push(rows[i].end_time);
+							y.push(value);
+						}
+					}
+					console.log(trace6.x);
+					console.log(trace6.y);
+					var data = [trace6];
+					var graphOptions = {layout:layout_RMUTSB,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 500);
+			////////////////////////////////////////////// Service Usage ///////////////////////////////////
+			setTimeout(function() {
+				var plotly = require('plotly')("choocku", "7sz7hclk2g")
+				var trace7 = {
+					x: [],
+					y: [],
+					fill: "tozeroy",
+					type: "scatter"
+				};
+				var timestamp = new Date(); 
+				var post = timestamp.toString().indexOf(timestamp.getFullYear());
+				var sub_date = timestamp.toString().substring(0,post+4);
+				//console.log(sub_date);
+				connection.query('SELECT * from ServiceLogs WHERE actType = 7 Order By slid ASC', function(err, rows, fields) {
+					console.log(rows);
+					for (var i=0;i<rows.length;i++){
+						var date_tostr = rows[i].timestamp.toString();
+						var index = date_tostr.indexOf(" ");
+						var sub_str = date_tostr.substring(0,index+12);
+						var value = 1;
+						console.log(sub_str);
+						if(sub_str == sub_date){
+							var x = trace7.x;
+							var y = trace7.y;
+							x.push(rows[i].timestamp);
+							y.push(value);
+						}
+					}
+					console.log(trace7.x);
+					console.log(trace7.y);
+					var data = [trace7];
+					var graphOptions = {layout:layout_Service,filename: "basic-area", fileopt: "overwrite"};
+					plotly.plot(data, graphOptions, function (err, msg) {
+						console.log(msg)
+					});
+				});
+			}, 600);
 		}
-		console.log(trace1.x);
-		console.log(trace1.y);
-		var data = [trace1];
-		var graphOptions = {layout:layout_KMUTNB,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	////////////////////////////////////////////// CU ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("expresslane20", "zvcuo12xui")
-	var trace2 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "CU" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace2.x;
-				var y = trace2.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log(trace2.x);
-		console.log(trace2.y);
-		var data = [trace2];
-		var graphOptions = {layout:layout_CU,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 100);
-	////////////////////////////////////////////// MU ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("expresslane30", "fcxc4bjob2")
-	var trace3 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "MU" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace3.x;
-				var y = trace3.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log(trace3.x);
-		console.log(trace3.y);
-		var data = [trace3];
-		var graphOptions = {layout:layout_MU,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 200);
-	////////////////////////////////////////////// UNINET ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("expresslane40", "016hfc74tq")
-	var trace4 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "UNINET" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace4.x;
-				var y = trace4.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log(trace4.x);
-		console.log(trace4.y);
-		var data = [trace4];
-		var graphOptions = {layout:layout_UNINET,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 300);
-	////////////////////////////////////////////// KKU ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("expresslane50", "f92cfehh0a")
-	var trace5 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace5.x;
-				var y = trace5.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log(trace5.x);
-		console.log(trace5.y);
-		var data = [trace5];
-		var graphOptions = {layout:layout_KKU,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 400);
-	////////////////////////////////////////////// RMUTSB ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("expresslane60", "h2kxqsa2vn")
-	var trace6 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "RMUTSB" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace6.x;
-				var y = trace6.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log(trace6.x);
-		console.log(trace6.y);
-		var data = [trace6];
-		var graphOptions = {layout:layout_RMUTSB,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 500);
-	////////////////////////////////////////////// Service Usage ///////////////////////////////////
-	setTimeout(function() {
-	var plotly = require('plotly')("uninet", "viv06akyfb")
-	var trace7 = {
-		x: [],
-		y: [],
-		fill: "tozeroy",
-		type: "scatter"
-	};
-	var timestamp = new Date(); 
-	var post = timestamp.toString().indexOf(timestamp.getFullYear());
-	var sub_date = timestamp.toString().substring(0,post+4);
-	//console.log(sub_date);
-	connection.query('SELECT * from log_Online_status WHERE host_name = "KKU" Order By id ASC', function(err, rows, fields) {
-		var value = 1;
-		for (var i=0;i<rows.length;i++){
-			var date_tostr = rows[i].end_time.toString();
-			var index = date_tostr.indexOf(" ");
-			var sub_str = date_tostr.substring(0,index+12);
-			//console.log(sub_str);
-			if(sub_str == sub_date){
-				if(rows[i].statuss == 'Offline'){
-					value = 0;
-				}else{
-					value = 1;
-				}
-				var x = trace7.x;
-				var y = trace7.y;
-				x.push(rows[i].end_time);
-				y.push(value);
-			}
-		}
-		console.log("KKN");
-		console.log(trace7.x);
-		console.log(trace7.y);
-		var data = [trace7];
-		var graphOptions = {layout:layout_Service,filename: "basic-area", fileopt: "overwrite"};
-		plotly.plot(data, graphOptions, function (err, msg) {
-			console.log(msg)
-		});
-	});
-	}, 600);
 	}
-	}
-
 };
+
+//contact us page render
 var contact = function(req, res, next) {
 	if(!req.isAuthenticated()) {
         res.render('contact', {title: 'contact',req:req});
-		}else{
+	}else{
 		var user = req.user;
-		
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
-		res.render('contact', {title: 'contact',req:req, user: user});
-		
+		res.render('contact', {title: 'contact',req:req, user: user});	
 	}
 };
 
-
+//serviceactivities page for member
 var serviceac = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		
@@ -1140,47 +1083,55 @@ var serviceac = function(req, res, next) {
 		}
 		if (user.role === 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			req.getConnection(function(err,connection){
 				var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? and actbyuser != 1 and (ServiceActivities.actType = 0 or ServiceActivities.actType = 4 or ServiceActivities.actType = 7)',[user.id],function(err,data){
-          var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? ',[user.id],function(err,history){
-					  res.render('serviceac',{page_title:"serviceac", user:user, data:data, history:history});
-				  });
-        });
+         			var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? ',[user.id],function(err,history){
+					  	res.render('serviceac',{page_title:"serviceac", user:user, data:data, history:history});
+				  	});
+        		});
 			});
 		}
 	}next();
 };
 
+//cancel service on serviceactivities page
 var ccServiceac = function(req,res){
-  if(!req.isAuthenticated()) {
-    res.redirect('/');
-    } else {
-    
-    var user = req.user;
-    if(user !== undefined) {
-      user = user.toJSON();
+  	if(!req.isAuthenticated()) {
+   		res.redirect('/');
+	} else { 
+    	var user = req.user;
+    	if(user !== undefined) {
+      		user = user.toJSON();
+    	}
+    	var id = req.params.id;
+    	req.getConnection(function (err, connection) {
+      		var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 1 WHERE actType = 0 and said = ? ",[id], function(err,rows){
+      			var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,1 FROM ServiceActivities WHERE said = ?",[id],function(err){
+        			if(err)
+        				console.log("Error accept : %s ",err );
+        		});
+      		});
+      		var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 5 WHERE actType = 4 and said = ? ",[id], function(err,rows){
+      			var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,5 FROM ServiceActivities WHERE said = ?",[id],function(err){
+        			if(err)
+        				console.log("Error accept : %s ",err );
+        		});
+     		});
+      		var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 8 WHERE actType = 7 and said = ? ",[id], function(err,rows){
+      			var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,8 FROM ServiceActivities WHERE said = ?",[id],function(err){
+              var query = connection.query("DELETE FROM ActivePackage WHERE said = ?",[id],function(err){
+  			        if(err)
+  				        console.log("Error accept : %s ",err );
+              });
+        		});
+      		});
+    		res.redirect('/serviceac');
+    	});
     }
-    var id = req.params.id;
-    req.getConnection(function (err, connection) {
-      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 1 WHERE actType = 0 and said = ? ",[id], function(err,rows){
-        if(err)
-        console.log("Error accept : %s ",err );
-      });
-      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 5 WHERE actType = 4 and said = ? ",[id], function(err,rows){
-        if(err)
-        console.log("Error accept : %s ",err );
-      });
-      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 8 WHERE actType = 7 and said = ? ",[id], function(err,rows){
-        if(err)
-        console.log("Error accept : %s ",err );
-      });
-      res.redirect('/serviceac');
-    });
-  }
 };
 
-
+//request service for member
 var addServiceac = function(req, res, next){
 	var input = JSON.parse(JSON.stringify(req.body));
 	var user = req.user;
@@ -1212,6 +1163,8 @@ var addServiceac = function(req, res, next){
 						endTime            : input.endTime,
 						said               : ss1[0].said,
 					};
+					var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?",ss1[0].said,function(err)
+				    {
 					var query = connection.query("INSERT INTO ResourceAllocated set ? ",data, function(err, rows){
 						if(!err){
 							res.redirect('/serviceac');
@@ -1259,9 +1212,10 @@ var addServiceac = function(req, res, next){
 			});
 		});
 	});
+});
 };
 
-//User Management
+//user management
 var user = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
@@ -1281,11 +1235,11 @@ var user = function(req, res, next) {
 				{
 					var query = connection.query('SELECT * FROM User WHERE role IS NULL',function(err,rows2)
 					{
-						var query = connection.query('SELECT * FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action',function(err,userhistory)
+						var query = connection.query('SELECT user, actionType.nameE , DATE_FORMAT(timestamp, "%Y/%c/%e @%h:%i:%p") AS timestamp FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action',function(err,userhistory)
 					    {
 							if(err)
-							console.log("Error Selecting : %s ",err );
-							res.render('user',{page_title:"user",user: user,data:rows1,data1:rows2,userhistory:userhistory});
+								console.log("Error Selecting : %s ",err );
+								res.render('user',{page_title:"user",user: user,data:rows1,data1:rows2,userhistory:userhistory});
 						});
 					});
 				});
@@ -1297,6 +1251,7 @@ var user = function(req, res, next) {
 	}
 };
 
+//accept user
 var accept = function(req,res){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
@@ -1316,7 +1271,7 @@ var accept = function(req,res){
 			var datatemp = connection.query("SELECT * FROM User WHERE id = ? ",[id],function(err, rows){
 				if (err){
 					console.log("Error reciving data : %s ",err );
-					} else {
+				} else {
 					datatemp = rows[0];
 					Nametemp = rows[0].NameE;
 					Lastnametemp = rows[0].LastNameE;
@@ -1331,7 +1286,7 @@ var accept = function(req,res){
 			req.getConnection(function (err, connection) {
 				connection.query("UPDATE User SET role = 2 WHERE id = ? ",[id], function(err, rows){
 					if(err)
-					console.log("Error accept : %s ",err );
+						console.log("Error accept : %s ",err );
 					res.redirect('/user');
 				});
 				
@@ -1370,7 +1325,7 @@ var accept = function(req,res){
 						console.log("Email was send ...");
 						
 						} else {
-						console.log("Error query database ...");
+							console.log("Error query database ...");
 						//connection.release();
 					}
 				});
@@ -1379,18 +1334,18 @@ var accept = function(req,res){
 	}
 };
 
+//submit edit user
 var saveedit = function(req, res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
-		
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			var input = JSON.parse(JSON.stringify(req.body));
 			var id = req.params.id;
 			req.getConnection(function (err, connection) {
@@ -1420,10 +1375,12 @@ var saveedit = function(req, res){
 		}
 	}
 };
+
+//edit user
 var edit = function(req, res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1436,16 +1393,12 @@ var edit = function(req, res){
 			
 			req.getConnection(function(err,connection){
 				
-				var query = connection.query('SELECT * FROM User WHERE id = ?',[id],function(err,rows)
-				{
-					
+				var query = connection.query('SELECT * FROM User WHERE id = ?',[id],function(err,rows){			
 					if(err)
-					console.log("Error Selecting : %s ",err );
+						console.log("Error Selecting : %s ",err );
 					
 					res.render('edit',{page_title:"Edit",user:user,data:rows});
-				});
-				
-				//console.log(query.sql);
+				});	
 			});
 		}
 	}
@@ -1459,11 +1412,12 @@ var delete_user = function(req,res){
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
-		} if (user.role !== 1) {
+		} 
+		if (user.role !== 1) {
 			res.redirect('/');
 		} else {
 			//exports.list = function(req, res){
-				var id = req.params.id;
+			var id = req.params.id;
 
 			// query User data
 			var mailchecker = 0;
@@ -1478,13 +1432,12 @@ var delete_user = function(req,res){
 					Userpassword = rows[0].password;
 					Emailtemp = rows[0].email;
 					console.log("data recived : %s ",err );
-
-					// delete user
+						// delete user
 					req.getConnection(function (err, connection) {
 						connection.query("DELETE FROM User  WHERE id = ? ",[id], function(err, rows){
-							if(err){
-								console.log("Error deleting : %s ",err );
-								console.log("Error query database ...");
+								if(err){
+							console.log("Error deleting : %s ",err );
+									console.log("Error query database ...");
 							}
 							res.redirect('/user');	
 						});
@@ -1499,13 +1452,13 @@ var delete_user = function(req,res){
 var cancel_user = function(req,res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
-			} if (user.role !== 1) {
+		} if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			//exports.list = function(req, res){
 			var id = req.params.id;
 			
@@ -1515,7 +1468,7 @@ var cancel_user = function(req,res){
 			var datatemp = connection.query("SELECT * FROM User WHERE id = ? ",[id],function(err, rows){
 				if (err){
 					console.log("Error reciving data : %s ",err );
-					} else {
+				} else {
 					Nametemp = rows[0].NameE;
 					Lastnametemp = rows[0].LastNameE;
 					Userid = rows[0].username;
@@ -1567,7 +1520,7 @@ var cancel_user = function(req,res){
 							//console.log(arr);
 							console.log("Email was send ...");
 							} else {
-							console.log("Error query database ...");
+								console.log("Error query database ...");
 							//connection.release();
 						}
 					});
@@ -1596,10 +1549,10 @@ var emailmanage = function(req, res, next) {
 				var query = connection.query('SELECT * FROM Emailtext',function(err,rows){
 					if(!err){
 						//console.log("query email text");
-						var query = connection.query('SELECT * FROM EmailLogs ',function(err,logs){ //ORDER BY logDate DESC
+						var query = connection.query("SELECT Sender, Reciver, emailData, DATE_FORMAT(logDate, '%Y/%c/%e @%h:%i:%p') AS logDate FROM EmailLogs ",function(err,logs){ //ORDER BY logDate DESC
 							if(!err){
 								//console.log("query email logs");
-								res.render('emailmanage',{page_title:"Email Management",user: user,data:rows,logs:logs});
+								res.render('emailmanage',{page_title:"Email Management",user: user, data:rows, logs:logs});
 							} else {
 								console.log("Error Selecting : %s ",err );
 							}
@@ -1610,7 +1563,6 @@ var emailmanage = function(req, res, next) {
 				});
 			});
 		}
-		
 	}
 };
 
@@ -1618,7 +1570,7 @@ var emailmanage = function(req, res, next) {
 var mailedit = function(req, res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1626,16 +1578,14 @@ var mailedit = function(req, res){
 		}
 		if (user.role !== 1) {
 			res.redirect('/emailmanage');
-			} else {
+		} else {
 			var id = req.params.id;
 			
 			req.getConnection(function(err,connection){
 				
-				var query = connection.query('SELECT * FROM Emailtext WHERE id = ?',[id],function(err,rows)
-				{
-					
+				var query = connection.query('SELECT * FROM Emailtext WHERE id = ?',[id],function(err,rows){
 					if(err)
-					console.log("Error Selecting : %s ",err );
+						console.log("Error Selecting : %s ",err );
 					
 					res.render('mailedit',{page_title:"Edit Email template",user:user,data:rows});
 				});
@@ -1649,7 +1599,7 @@ var mailedit = function(req, res){
 var mailsave = function(req, res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1657,7 +1607,7 @@ var mailsave = function(req, res){
 		}
 		if (user.role !== 1) {
 			res.redirect('/emailmanage');
-			} else {
+		} else {
 			var input = JSON.parse(JSON.stringify(req.body));
 			var id = req.params.id;
 			req.getConnection(function (err, connection) {
@@ -1672,7 +1622,7 @@ var mailsave = function(req, res){
 					if (err){
 					console.log("Error Updating : %s ",err )};
 					// update email template
-					eamildata = connection.query(queryString, function(err, result){ //Query data from database
+					emaildata = connection.query(queryString, function(err, result){ //Query data from database
 						if(!err) {
 							//connection.release();
 							console.log("Data was recived ...");
@@ -1691,44 +1641,63 @@ var mailsave = function(req, res){
 	}
 };
 
+//service management
 var servicemanage = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
-			//exports.list = function(req, res){
-			
+		} else {
 			req.getConnection(function(err,connection){
-        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceActivities.actType = ServiceActivityType.actType',function(err,history){
-			var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4',function(err,approve){	
-                var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType =0 ',function(err,request){
-					var query = connection.query('SELECT * FROM ActivePackage',function(err,active){
-							if(err)
-							console.log("Error Selecting : %s ",err );
-						
-								res.render('servicemanage',{page_title:"servicemanage",active:active,request:request,user: user,history:history,approve:approve});
-								
+		        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceActivities.actType = ServiceActivityType.actType',function(err,state){
+				  	var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime,DATE_FORMAT(ServiceLogs.timestamp, "%Y/%c/%e @%h:%i:%p") AS timestamp,ServiceActivityType.nameE  FROM ServiceLogs LEFT JOIN ServiceActivities ON ServiceLogs.said=ServiceActivities.said JOIN ResourceAllocated ON ResourceAllocated.said = ServiceLogs.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceLogs.actType = ServiceActivityType.actType',function(err,history){
+						var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4',function(err,approve){	
+		                	var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType =0 ',function(err,request){
+								var query = connection.query('SELECT * FROM ActivePackage',function(err,active){
+									if(err)
+										console.log("Error Selecting : %s ",err );
+									res.render('servicemanage',{page_title:"servicemanage",active:active,request:request,user: user,history:history,state:state,approve:approve});
+								});
+							});
 						});
 					});
-				});
-                            });
+            	});
 				//console.log(query.sql);
 			});
+			//exports.list = function(req, res){
+			/*
+			req.getConnection(function(err,connection){
+		        var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%c/%e @%h:%i:%p") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%c/%e @%h:%i:%p") AS endTime,ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceActivities.actType = ServiceActivityType.actType',function(err,state){
+				  	var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%c/%e @%h:%i:%p") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%c/%e @%h:%i:%p") AS endTime,DATE_FORMAT(ServiceLogs.timestamp, "%Y/%c/%e @%h:%i:%p") AS timestamp,ServiceActivityType.nameE  FROM ServiceLogs LEFT JOIN ServiceActivities ON ServiceLogs.said=ServiceActivities.said JOIN ResourceAllocated ON ResourceAllocated.said = ServiceLogs.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceLogs.actType = ServiceActivityType.actType',function(err,history){
+						var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%c/%e @%h:%i:%p") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%c/%e @%h:%i:%p") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4',function(err,approve){	
+		                	var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%c/%e @%h:%i:%p") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%c/%e @%h:%i:%p") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType =0 ',function(err,request){
+								var query = connection.query('SELECT ActivePackage.username,ActivePackage.resourceString1,ActivePackage.resourceString2,ActivePackage.IP1,ActivePackage.IP2,DATE_FORMAT(ActivePackage.startTime, "%Y/%c/%e @%h:%i:%p") AS startTime,DATE_FORMAT(ActivePackage.endTime, "%Y/%c/%e @%h:%i:%p") AS endTime FROM ActivePackage',function(err,active){
+									if(err)
+										console.log("Error Selecting : %s ",err );
+									res.render('servicemanage',{page_title:"servicemanage",active:active,request:request,user: user,history:history,state:state,approve:approve});
+								});
+							});
+						});
+					});
+            	});
+				//console.log(query.sql);
+			});*/
 		}
 		
 	}
     next();
 };
+
+//add service active for admin
 var addService = function(req, res, next){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1736,7 +1705,7 @@ var addService = function(req, res, next){
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			var input = JSON.parse(JSON.stringify(req.body));
 			req.getConnection(function (err, connection) {
 				var data = {
@@ -1751,7 +1720,7 @@ var addService = function(req, res, next){
 				};
 				var query = connection.query("INSERT INTO ActivePackage set ? ",[data], function(err, rows){
 					if (err)
-					console.log("Error inserting : %s ",err );
+						console.log("Error inserting : %s ",err );
 					res.redirect('/servicemanage');
 				});
 			});
@@ -1759,10 +1728,11 @@ var addService = function(req, res, next){
 	}
 };
 
+//approve service request
 var accept_service = function(req,res){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1770,11 +1740,9 @@ var accept_service = function(req,res){
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			var id = req.params.id;
-			req.getConnection(function (err, connection) {
-				
-				
+			req.getConnection(function (err, connection) {			
 				var Nametemp, Lastnametemp, Emailtemp,SAID ,startTime, endTime ='';
 				var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?',[id], function(err, rows){	
 					Userid = rows[0].username;
@@ -1797,113 +1765,116 @@ var accept_service = function(req,res){
 						
 					};
                     if (rows[0].startTime <= new Date()) {
-					var query = connection.query("INSERT INTO ActivePackage SET ?",data, function(err,rows)
-					{
-						connection.query("UPDATE ServiceActivities SET actType = 7 WHERE said = ? ",[id], function(err,rows){  
-							if(err)
-							console.log("Error accept : %s ",err );
-							res.redirect('/servicemanage');
-							//send email function
-							var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 2', function(err, result){ //Query data from database
-								if(!err) {
-									//connection.release();
-									var temp = result[0].Text.split("*").map(function (val) {
-										return (val);
-									});
-									
-									// send email notification
-									transporter.sendMail({
-										form: 'Uninet Express Lane Services Team',
-										to: Emailtemp,
-										subject: 'Uninet Express Lane',
-										html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ Nametemp+' '+ Lastnametemp+', <br><br>'+temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-									});
-									
-									//log data
-									var logdata = {
-											//logDate 	: now(),
-											Sender 		: user.username,
-											Reciver 	: Userid+"("+Emailtemp+")",
-											emailData  	: temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]
-									};
+						var query = connection.query("INSERT INTO ActivePackage SET ?",data, function(err,rows){
+							var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ServiceActivities WHERE said = ?",[id],function(err){
+								connection.query("UPDATE ServiceActivities SET actType = 7 WHERE said = ? ",[id], function(err,rows){  
+									if(err)
+										console.log("Error accept : %s ",err );
+									res.redirect('/servicemanage');
+									//send email function
+									var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 2', function(err, result){ //Query data from database
+										if(!err) {
+											//connection.release();
+											var temp = result[0].Text.split("*").map(function (val) {
+												return (val);
+											});
+										
+											// send email notification
+											transporter.sendMail({
+												form: 'Uninet Express Lane Services Team',
+												to: Emailtemp,
+												subject: 'Uninet Express Lane',
+												html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ Nametemp+' '+ Lastnametemp+', <br><br>'+temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
+											});
+											
+											//log data
+											var logdata = {
+													//logDate 	: now(),
+													Sender 		: user.username,
+													Reciver 	: Userid+"("+Emailtemp+")",
+													emailData  	: temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]
+											};
 
-									//save logs to database
-									var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
-										if(err){
-											console.log("Error when query logs : %s",err);
+											//save logs to database
+											var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
+												if(err){
+													console.log("Error when query logs : %s",err);
+												} else {
+													console.log("Log saved");
+												}
+											});
+											
+											//console.log(arr);
+											console.log("Email was send ...");
 										} else {
-											console.log("Log saved");
+											console.log("Error query database ...");
+										//connection.release();
 										}
 									});
-									
-									//console.log(arr);
-									console.log("Email was send ...");
-									} else {
-									console.log("Error query database ...");
-									//connection.release();
-								}
+								});
 							});
+							//console.log(query.sql);
 						});
-						//console.log(query.sql);
-					});
-                }else{
-						connection.query("UPDATE ServiceActivities SET actType = 4 WHERE said = ? ",[id], function(err,rows){  
-							if(err)
-							console.log("Error accept : %s ",err );
-							res.redirect('/servicemanage');
-							//send email function
-							var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 2', function(err, result){ //Query data from database
-								if(!err) {
-									//connection.release();
-									var temp = result[0].Text.split("*").map(function (val) {
-										return (val);
-									});
+                	}else{
+                	  	var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,4 FROM ServiceActivities WHERE said = ?",[id],function(err){
+							connection.query("UPDATE ServiceActivities SET actType = 4 WHERE said = ? ",[id], function(err,rows){  
+								if(err)
+									console.log("Error accept : %s ",err );
+								res.redirect('/servicemanage');
+								//send email function
+								var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 2', function(err, result){ //Query data from database
+									if(!err) {
+										//connection.release();
+										var temp = result[0].Text.split("*").map(function (val) {
+											return (val);
+										});
 									
-									// send email notification
-									transporter.sendMail({
-										form: 'Uninet Express Lane Services Team',
-										to: Emailtemp,
-										subject: 'Uninet Express Lane',
-										html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ Nametemp+' '+ Lastnametemp+', <br><br>'+temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-									});
-									
-									//log data
-									var logdata = {
-											//logDate 	: now(),
-											Sender 		: user.username,
-											Reciver 	: Userid+"("+Emailtemp+")",
-											emailData  	: temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]
-									};
+										// send email notification
+										transporter.sendMail({
+											form: 'Uninet Express Lane Services Team',
+											to: Emailtemp,
+											subject: 'Uninet Express Lane',
+											html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ Nametemp+' '+ Lastnametemp+', <br><br>'+temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
+										});
+										
+										//log data
+										var logdata = {
+												//logDate 	: now(),
+												Sender 		: user.username,
+												Reciver 	: Userid+"("+Emailtemp+")",
+												emailData  	: temp[0]+SAID+temp[1]+ startTime+temp[2]+ endTime+temp[3]
+										};
 
-									//save logs to database
-									var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
-										if(err){
-											console.log("Error when query logs : %s",err);
-										} else {
-											console.log("Log saved");
-										}
-									});
-									
-									//console.log(arr);
-									console.log("Email was send ...");
+										//save logs to database
+										var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?",logdata,function(err,rows){
+											if(err){
+												console.log("Error when query logs : %s",err);
+											} else {
+												console.log("Log saved");
+											}
+										});
+										
+										//console.log(arr);
+										console.log("Email was send ...");
 									} else {
-									console.log("Error query database ...");
-									//connection.release();
-								}
+										console.log("Error query database ...");
+										//connection.release();
+									}
+								});
 							});
 						});
-						//console.log(query.sql)
-                    
-                }
-			});
-                });
+                	}
+				});
+            });
 		}
 	}
 };
+
+//edit service active for admin
 var edit_service = function(req, res){
     if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1911,37 +1882,32 @@ var edit_service = function(req, res){
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			var id = req.params.apid;
 			
 			req.getConnection(function(err,connection){
-				
-				var query = connection.query('SELECT * FROM ActivePackage WHERE apid = ?',[id],function(err,rows)
-				{
-					
+				var query = connection.query('SELECT * FROM ActivePackage WHERE apid = ?',[id],function(err, rows){				
 					if(err)
-					console.log("Error Selecting : %s ",err );
-					
+						console.log("Error Selecting : %s ",err );
 					res.render('edit',{page_title:"Edit",user:user,data:rows});
 				});
-				
-				//console.log(query.sql);
 			});
 		}
 	}
 };
+
+//submit edit service for admin
 var saveedit_service = function(req, res){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
-		
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
 		if (user.role !== 1) {
 			res.redirect('/memberindex');
-			} else {
+		} else {
 			var input = JSON.parse(JSON.stringify(req.body));
 			var id = req.params.id;
 			req.getConnection(function (err, connection) {
@@ -1954,25 +1920,57 @@ var saveedit_service = function(req, res){
 					endTime : input.endTime
 				};
 				
-				var query = connection.query("UPDATE ActivePackage SET ? WHERE apid = ? ",[data,id], function(err, rows)
-				{
-					
+				var query = connection.query("UPDATE ActivePackage SET ? WHERE apid = ? ",[data,id], function(err, rows){
 					if (err)
-					console.log("Error Updating : %s ",err );
-					
-					res.redirect('/servicemanage');
-					
-				});
-				
+						console.log("Error Updating : %s ",err );
+					res.redirect('/servicemanage');	
+				});	
 			});
 		}
 	}
 };
 
+//cancel service requested
 var delete_service = function(req,res){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
+	} else {
+		var user = req.user;
+		if(user !== undefined) {
+			user = user.toJSON();
+		}
+		if (user.role !== 1) {
+			res.redirect('/');
 		} else {
+			//exports.list = function(req, res){
+			var id = req.params.id;
+				req.getConnection(function (err, connection) {
+				var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?',[id], function(err, rows){	
+					Nametemp = rows[0].NameE;
+					Lastnametemp = rows[0].LastNameE;
+					Emailtemp = rows[0].email;
+					SAID = rows[0].said;
+					startTime = rows[0].startTime;
+					endTime = rows[0].endTime;
+					console.log("recived Data");
+				});
+				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,2 FROM ServiceActivities WHERE said = ?",[id],function(err){
+					connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 2 , actbyuser=1 WHERE ServiceActivities.said = ?",[id], function(err, rows){
+						if(err)
+							console.log("Error deleting : %s ",err );
+						res.redirect('/servicemanage');
+					});
+				});
+			});
+		}
+	}
+};
+
+//cancel service approved
+var delete_approve = function(req,res){
+	if(!req.isAuthenticated()) {
+		res.redirect('/');
+	} else {
 		
 		var user = req.user;
 		if(user !== undefined) {
@@ -1980,11 +1978,8 @@ var delete_service = function(req,res){
 		}
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
-			//exports.list = function(req, res){
-			
+		} else {	
 			var id = req.params.id;
-			
 			req.getConnection(function (err, connection) {
 				var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?',[id], function(err, rows){	
 					Nametemp = rows[0].NameE;
@@ -1995,67 +1990,57 @@ var delete_service = function(req,res){
 					endTime = rows[0].endTime;
 					console.log("recived Data");
 				});
-				
-				connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 6 , actbyuser=1 WHERE ServiceActivities.said = ?",[id], function(err, rows)
-				{
-					
-					if(err)
-					console.log("Error deleting : %s ",err );
-					
-					res.redirect('/servicemanage');
-					
+				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,6 FROM ServiceActivities WHERE said = ?",[id],function(err){
+				 	connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 6 , actbyuser=1 WHERE ServiceActivities.said = ?",[id], function(err, rows){
+						if(err)
+							console.log("Error deleting : %s ",err );	
+						res.redirect('/servicemanage');
+					});
 				});
-				
-				//console.log(query.sql);
 			});
-		}
-		
+		}	
 	}
 };
+
+//cancel active service
 var delete_active = function(req,res){
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
-		
+	} else {
 		var user = req.user;
 		if(user !== undefined) {
 			user = user.toJSON();
 		}
+
 		if (user.role !== 1) {
 			res.redirect('/');
-			} else {
+		} else {
 			//exports.list = function(req, res){
-			
 			var id = req.params.id;
 			console.log(id);
 			req.getConnection(function (err, connection) {
-				connection.query("UPDATE ServiceActivities INNER JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said set actType = 9,actbyuser = 1 WHERE ActivePackage.apid = ? ",[id], function(err, rows)
-				{
-					if(err)
-					console.log("Error deleting : %s ",err );
-					console.log(id);
-
-				connection.query("DELETE FROM ActivePackage  WHERE apid = ? ",[id], function(err, rows)
-				{
-					
-					if(err)
-					console.log("Error deleting : %s ",err );
-					
-					res.redirect('/servicemanage');
-					
+				var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ActivePackage.said,9 FROM ActivePackage WHERE ActivePackage.apid = ?",[id],function(err){
+					connection.query("UPDATE ServiceActivities INNER JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said set actType = 9,actbyuser = 1 WHERE ActivePackage.apid = ? ",[id], function(err, rows){
+						if(err)
+							console.log("Error deleting : %s ",err );
+						console.log(id);
+						connection.query("DELETE FROM ActivePackage  WHERE apid = ? ",[id], function(err, rows){
+							if(err)
+								console.log("Error deleting : %s ",err );
+							res.redirect('/servicemanage');
+						});
+					});
 				});
-				});
-				//console.log(query.sql);
 			});
 		}
-		
 	}
 };
 
 // sign in
 // GET
 var signIn = function(req, res, next) {
-	if(req.isAuthenticated()) res.redirect('/memberindex');
+	if(req.isAuthenticated()) 
+		res.redirect('/memberindex');
 	res.render('signin', {title: 'Sign In'});
 };
 
@@ -2074,31 +2059,27 @@ var signInPost = function(req, res, next) {
 		return req.logIn(user, function(err) {
 			if(err) {
 				return res.render('index', {title: 'Sign In',req:req, errorMessage: err.message});
-				} else {
+			} else {
 				user.flag = 1;
 				req.getConnection(function(err,connection){
-				
-				var query = connection.query('INSERT INTO accessLogs(user,action) VALUES(?,1)',[user.username],function(err,rows)
-				{
-					
-					if(err)
-					console.log("Error Selecting : %s ",err );
-				});
-				
-				//console.log(query.sql);
+					var query = connection.query('INSERT INTO accessLogs(user,action) VALUES(?,1)',[user.username],function(err,rows){
+						if(err)
+							console.log("Error Selecting : %s ",err );
+					});
 			    });
 				return res.redirect('/');
 			}
 		});
 	})(req, res, next);
 };
+
 // sign up
 // GET
 
 var signUp = function(req, res, next) {
 	if(req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		res.render('signup', {title: 'Sign Up'});
 	}
 };
@@ -2113,7 +2094,7 @@ var signUpPost = function(req, res, next) {
 	return usernamePromise.then(function(model) {
 		if(model) {
 			res.render('signup', {title: 'signup', errorMessagesu: 'username already exists' });
-			} else {
+		} else {
 			//****************************************************//
 			// MORE VALIDATION GOES HERE(E.G. PASSWORD VALIDATION)
 			//****************************************************//
@@ -2136,10 +2117,10 @@ var signUpPost = function(req, res, next) {
 					
 					//log data
 					var logdata = {
-										//logDate 	: now(),
-										Sender 		: "AUTO Sender",
-										Reciver 	: user.username+"("+user.email+")",
-										emailData  	: temp
+						//logDate 	: now(),
+						Sender 		: "AUTO Sender",
+						Reciver 	: user.username+"("+user.email+")",
+						emailData  	: temp
 					};
 
 					//save logs to database
@@ -2154,7 +2135,7 @@ var signUpPost = function(req, res, next) {
 					//console.log(arr);
 					console.log("Email was send ...");
 					
-					} else {
+				} else {
 					console.log("Error query database ...");
 					//connection.release();
 				}
@@ -2173,21 +2154,18 @@ var signUpPost = function(req, res, next) {
 var signOut = function(req, res, next) {
 	if(!req.isAuthenticated()) {
 		res.redirect('/');
-		} else {
+	} else {
 		var user = req.user;
 		req.getConnection(function (err, connection) {
-			var query = connection.query("UPDATE User set flag=0 WHERE id = ? ",[user.id], function(err, rows)
-			{ 
+			var query = connection.query("UPDATE User set flag=0 WHERE id = ? ",[user.id], function(err, rows){ 
 				if(err)
 					console.log("Error Selecting : %s ",err );
 				
 			});
-			var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?',[user.id],function(err,rows)
-				{
-					
-					if(err)
+			var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?',[user.id],function(err,rows){
+				if(err)
 					console.log("Error Selecting : %s ",err );
-				});
+			});
 		});
 		req.logout();
 		res.redirect('/');
@@ -2195,11 +2173,6 @@ var signOut = function(req, res, next) {
 };
 
 
-// 404 not found
-var notFound404 = function(req, res, next) {
-	res.status(404);
-	res.render('404', {title: '404 Not Found'});
-};
 
 // export functions
 /**************************************/
@@ -2243,6 +2216,7 @@ module.exports.accept_service = accept_service;
 module.exports.edit_service = edit_service;
 module.exports.saveedit_service = saveedit_service;
 module.exports.delete_service = delete_service;
+module.exports.delete_approve = delete_approve;
 module.exports.delete_active = delete_active;
 module.exports.addService = addService;
 // sigin in
@@ -2260,5 +2234,3 @@ module.exports.statusPost = statusPost;
 // sign out
 module.exports.signOut = signOut;
 
-// 404 not found
-module.exports.notFound404 = notFound404;
