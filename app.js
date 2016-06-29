@@ -1,4 +1,4 @@
-// vendor libraries
+// module list
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -11,13 +11,14 @@ var LocalStrategy = require('passport-local').Strategy;
 var mysql = require('mysql');
 var connection  = require('express-myconnection');
 var plotly = require('plotly')("choocku", "7sz7hclk2g")
-
+//route
 var route = require('./route');
 // model
 var Model = require('./models/model');
 
 var app = express();
 
+//passportjs for authentication
 passport.use(new LocalStrategy(function(username, password, done) {
    new Model.User({username: username}).fetch().then(function(data) {
       var user = data;
@@ -48,6 +49,7 @@ passport.deserializeUser(function(username, done) {
    });
 });
 
+//server defualt setting
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -72,55 +74,64 @@ app.use(
     },'pool')
 );
 
-// GET
+
+//route module for page
+/********************************/
+// index
 app.get('/', route.index,route.check );
 
+//profile
 app.get('/profile', route.profile);
+
+//repassword
 app.get('/repass', route.repass);
 app.post('/repass', route.repasspost);
+
+//project information
 app.get('/about', route.about);
 app.get('/contact', route.contact);
-app.get('/status', route.status);
-app.post('/status', route.statusPost);
 app.get('/service', route.service);
 app.get('/document', route.document);
+
+//status node
+app.get('/status', route.status);
+app.post('/status', route.statusPost);
+
+//graph
+app.get('/graph', route.graph);
+
 // signin
-// GET
-// POST
 app.post('/signin', route.signInPost);
 
 // signup
-
-// GET
-// POST
 app.get('/signup', route.signUp);
 app.post('/signup', route.signUpPost);
 
 // logout
-// GET
 app.get('/signout', route.signOut);
 
-
+//serviceactivities
 app.get('/serviceac', route.serviceac,route.check );
 app.post('/addServiceac', route.addServiceac);
 app.get('/serviceac/cancel/:id', route.ccServiceac);
 
+//service management
+app.get('/servicemanage', route.servicemanage ,route.check);
 app.post('/servicemanage', route.addService,route.check );
-app.get('/user', route.user);
-
-app.get('/user/accept/:id',route.accept);
-app.get('/servicemanage/accept/:id',route.accept_service);
-app.get('/user/edit/:id', route.edit);
-app.get('/servicemanage/edit/:id', route.edit);
-app.post('/user/edit/:id',route.saveedit);
-app.post('/servicemanage/edit/:id',route.saveedit_service);
-app.get('/user/delete/:id', route.delete_user);
-app.get('/user/cancel/:id', route.cancel_user);
 app.get('/servicemanage/delete/:id', route.delete_service);
 app.get('/servicemanage/deleteactive/:id', route.delete_active);
-app.get('/servicemanage', route.servicemanage ,route.check);
-/********************************/
-/********************************/
+app.get('/servicemanage/deleteapprove/:id', route.delete_approve);
+app.get('/servicemanage/accept/:id',route.accept_service);
+app.get('/servicemanage/edit/:id', route.edit);
+app.post('/servicemanage/edit/:id',route.saveedit_service);
+
+//user managment
+app.get('/user', route.user);
+app.get('/user/accept/:id',route.accept);
+app.get('/user/edit/:id', route.edit);
+app.post('/user/edit/:id',route.saveedit);
+app.get('/user/delete/:id', route.delete_user);
+app.get('/user/cancel/:id', route.cancel_user);
 
 // mail management
 app.get('/emailmanage', route.emailmanage);
@@ -128,8 +139,10 @@ app.get('/emailmanage', route.emailmanage);
 app.get('/emailmanage/mailedit/:id', route.mailedit);
 app.post('/emailmanage/mailedit/:id', route.mailsave);
 
-// 404 not found
-//app.use(route.notFound404);
+
+/********************************/
+
+//server start alert
 app.use(app.router);
 var server = app.listen(app.get('port'), function() {
 
